@@ -10,6 +10,9 @@ builder.Services.AddWebApi();
 
 var app = builder.Build();
 
+await app.Services.MigrateAsync();
+
+app.UseWebApi();
 app.Run();
 
 public partial class Program { }
