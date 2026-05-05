@@ -2,5 +2,6 @@ namespace Domain.Abstractions;
 
 public interface IDateTimeProvider
 {
-    DateTime UtcNow();
+    DateOnly DateOnlyUtcNow();
+    DateTime DateTimeUtcNow();
 }

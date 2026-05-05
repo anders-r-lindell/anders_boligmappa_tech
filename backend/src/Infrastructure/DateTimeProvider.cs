@@ -4,5 +4,6 @@ namespace Infrastructure;
 
 internal sealed class DateTimeProvider : IDateTimeProvider
 {
-    public DateTime UtcNow() => DateTime.UtcNow;
+    public DateOnly DateOnlyUtcNow() => DateOnly.FromDateTime(DateTime.UtcNow);
+    public DateTime DateTimeUtcNow() => DateTime.UtcNow;
 }
