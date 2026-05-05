@@ -1,3 +1,4 @@
+using Domain.Abstractions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -9,6 +10,8 @@ public static class InfrastructureServiceRegistration
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
+
         return services;
     }
 }
