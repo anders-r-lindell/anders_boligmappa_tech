@@ -16,6 +16,7 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
 
         var (statusCode, title) = exception switch
         {
+            DocumentNotFoundException => (StatusCodes.Status404NotFound, "Resource not found"),
             DomainException => (StatusCodes.Status422UnprocessableEntity, "Business rule violation"),
             ArgumentException or ArgumentNullException => (StatusCodes.Status400BadRequest, "Invalid request"),
             _ => (StatusCodes.Status500InternalServerError, "An unexpected error occurred")
