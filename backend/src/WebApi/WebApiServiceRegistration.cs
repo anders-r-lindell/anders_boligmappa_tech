@@ -15,11 +15,16 @@ public static class WebApiServiceRegistration
             options.ApiVersionReader = new UrlSegmentApiVersionReader();
         });
 
+        services.AddProblemDetails();
+        services.AddExceptionHandler<GlobalExceptionHandler>();
+
         return services;
     }
 
     public static WebApplication UseWebApi(this WebApplication app)
     {
+        app.UseExceptionHandler();
+        
         app.MapDocumentEndpoints();
         return app;
     }
