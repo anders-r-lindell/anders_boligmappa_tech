@@ -10,3 +10,5 @@ public sealed record DocumentResponse(
     DateTime CreatedAt);
 
 public sealed record DocumentListResponse(IReadOnlyList<DocumentResponse> Documents);
+
+public sealed record DocumentListWithCursorResponse(IReadOnlyList<DocumentResponse> Documents, Guid? NextCursor);

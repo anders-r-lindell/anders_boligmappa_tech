@@ -13,6 +13,7 @@ public static class ApplicationServiceRegistration
         services.AddScoped<IQueryDispatcher, QueryDispatcher>();
 
         services.AddScoped<IQueryHandler<GetExpiringDocumentsByPropertyIdQuery, IReadOnlyList<Document>>, GetExpiringDocumentsQueryHandler>();
+        services.AddScoped<IQueryHandler<GetAllExpiringDocumentsQuery, IReadOnlyList<Document>>, GetAllExpiringDocumentsQueryHandler>();
 
         return services;
     }

@@ -22,4 +22,8 @@ internal static class DocumentMappingExtensions
 
     internal static DocumentListResponse ToListResponse(this IReadOnlyList<Document> documents, IDateTimeProvider dateTimeProvider) => new(
         documents.Select(d => d.ToResponse(dateTimeProvider)).ToList().AsReadOnly());
+
+    internal static DocumentListWithCursorResponse ToListWithCursorResponse(this IReadOnlyList<Document> documents, int pageSize, IDateTimeProvider dateTimeProvider) => new(
+        documents.Select(d => d.ToResponse(dateTimeProvider)).ToList().AsReadOnly(),
+        documents.Count == pageSize ? documents[documents.Count - 1].Id : null);
 }

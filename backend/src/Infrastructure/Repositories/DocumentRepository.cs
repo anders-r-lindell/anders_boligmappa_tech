@@ -24,4 +24,28 @@ internal sealed class DocumentRepository(BoligmappaDbContext dbContext, IDateTim
 
         return documentDaos.Select(d => d.ToDomain()).ToList().AsReadOnly();
     }
+
+    public async Task<IReadOnlyList<Document>> GetAllExpiringAsync(
+        int withinDays, Guid? cursorId = null, int pageSize = 20, CancellationToken cancellationToken = default)
+    {
+        var now = dateTimeProvider.DateOnlyUtcNow();
+        var end = now.AddDays(withinDays);
+
+        IQueryable<DocumentDao> query = dbContext.Documents
+            .AsNoTracking()
+            .Include(d => d.ReminderSnooze)
+            .Where(d => (d.ReminderSnooze == null || d.ReminderSnooze.SnoozedUntil < now) && (d.ExpiryDate >= now && d.ExpiryDate <= end))
+            .OrderBy(d => d.Id);
+
+        if (cursorId.HasValue)
+        {
+            query = query.Where(d => d.Id > cursorId.Value);
+        }
+
+        var documentDaos = await query
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return documentDaos.Select(d => d.ToDomain()).ToList().AsReadOnly();
+    }
 }
