@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Refit;
+using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -63,9 +65,25 @@ public class WebApplicationFactory : WebApplicationFactory<Program>
         })
     };
 
-    public IDocumentsApi CreateDocumentsApi(Guid? personId = null)
+    public HttpClient CreateAuthenticatedClient(Guid personId)
     {
         var client = CreateClient();
+
+        var token = new JwtSecurityToken(
+            claims: [new("person-id", personId.ToString())],
+            expires: DateTime.UtcNow.AddHours(8));
+        var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+        var claims = new Dictionary<string, object> { { "person-id", personId.ToString() } };
+
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", tokenString);
+        return client;
+    }
+
+    public IDocumentsApi CreateDocumentsApi(Guid? personId = null)
+    {
+        var client = personId.HasValue ? CreateAuthenticatedClient(personId.Value) : CreateClient();
         return RestService.For<IDocumentsApi>(client, _refitSettings);
     }
 

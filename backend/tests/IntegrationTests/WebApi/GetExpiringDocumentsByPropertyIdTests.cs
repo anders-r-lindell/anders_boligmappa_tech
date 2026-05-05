@@ -47,4 +47,29 @@ public class GetExpiringDocumentsByPropertyIdTests : IAsyncLifetime
             response.Content!.Documents.Should().BeEmpty();
         }
     }
+
+    [Fact]
+    public async Task GetExpiringByPropertyId_WhenDocumentHasExpiryDateButReminderIsSnoozed_ReturnsExpectedDocuments()
+    {
+        var seedData = await _factory.SeedAsync(10);
+
+        var propertyId = seedData.Properties[0].Id;
+        var clientPersonId = seedData.Properties[0].OwnerId;
+
+        var documentsApi = _factory.CreateDocumentsApi(clientPersonId);
+
+        var response = await documentsApi.GetExpiringByPropertyIdAsync(propertyId);
+
+        response.IsSuccessStatusCode.Should().BeTrue();
+        response.Content!.Documents.Should().NotBeEmpty();
+
+        var documentToSnooze = response.Content!.Documents.First();
+
+        await documentsApi.SnoozeAsync(documentToSnooze.Id);
+
+        response = await documentsApi.GetExpiringByPropertyIdAsync(propertyId);
+
+        response.IsSuccessStatusCode.Should().BeTrue();
+        response.Content!.Documents.Should().NotContain(x => x.Id == documentToSnooze.Id);
+    }
 }

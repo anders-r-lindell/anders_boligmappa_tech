@@ -1,4 +1,5 @@
 using Application.Cqrs;
+using Application.Features.Documents.Commands;
 using Application.Features.Documents.Queries;
 using Asp.Versioning;
 using Domain.Abstractions;
@@ -25,7 +26,19 @@ public static class DocumentEndpoints
             .WithTags(TagName)
             .AllowAnonymous();
 
+        app.MapPost("/api/v{version:apiVersion}/documents/{documentId:guid}/snooze", SnoozeAsync)
+            .WithApiVersionSet(versionSet)
+            .WithTags(TagName)
+            .RequireAuthorization("DocumentOwner");
+
         return app;
+    }
+
+    private static async Task<IResult> SnoozeAsync(
+    Guid documentId, ICommandDispatcher dispatcher, IDateTimeProvider dateTimeProvider, CancellationToken ct)
+    {
+        var document = await dispatcher.DispatchAsync(new SnoozeDocumentCommand(documentId), ct);
+        return TypedResults.Ok(document.ToResponse(dateTimeProvider));
     }
 
     private static async Task<IResult> GetExpiringByPropertyIdAsync(

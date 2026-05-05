@@ -1,7 +1,8 @@
 using Application.Cqrs;
+using Application.Features.Documents.Commands;
 using Application.Features.Documents.Queries;
-using Microsoft.Extensions.DependencyInjection;
 using Domain.Entities;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Application;
 
@@ -14,6 +15,8 @@ public static class ApplicationServiceRegistration
 
         services.AddScoped<IQueryHandler<GetExpiringDocumentsByPropertyIdQuery, IReadOnlyList<Document>>, GetExpiringDocumentsQueryHandler>();
         services.AddScoped<IQueryHandler<GetAllExpiringDocumentsQuery, IReadOnlyList<Document>>, GetAllExpiringDocumentsQueryHandler>();
+
+        services.AddScoped<ICommandHandler<SnoozeDocumentCommand, Document>, SnoozeDocumentCommandHandler>();
 
         return services;
     }

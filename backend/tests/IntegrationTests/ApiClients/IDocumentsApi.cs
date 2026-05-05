@@ -10,4 +10,7 @@ public interface IDocumentsApi
 
     [Get("/api/v1/documents/expiring")]
     Task<IApiResponse<DocumentListWithCursorResponse>> GetAllExpiringAsync([Query] Guid? cursorId, [Query] int pageSize = 20, CancellationToken ct = default);
+
+    [Post("/api/v1/documents/{documentId}/snooze")]
+    Task<IApiResponse<DocumentResponse>> SnoozeAsync(Guid documentId, CancellationToken ct = default);
 }

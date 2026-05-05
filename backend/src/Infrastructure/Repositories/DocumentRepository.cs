@@ -48,4 +48,61 @@ internal sealed class DocumentRepository(BoligmappaDbContext dbContext, IDateTim
 
         return documentDaos.Select(d => d.ToDomain()).ToList().AsReadOnly();
     }
+
+    public async Task UpdateReminderSnoozeAsync(Document document, CancellationToken cancellationToken = default)
+    {
+        var documentDao = await dbContext.Documents
+            .Include(d => d.ReminderSnooze)
+            .FirstOrDefaultAsync(d => d.Id == document.Id, cancellationToken);
+
+        if (documentDao is null)
+        {
+            return;
+        }
+
+        if (document.ReminderSnooze is not null)
+        {
+            if (documentDao.ReminderSnooze is null)
+            {
+                documentDao.ReminderSnooze = new ReminderSnoozeDao
+                {
+                    Id = document.ReminderSnooze.Id,
+                    DocumentId = document.Id,
+                    SnoozedUntil = document.ReminderSnooze.SnoozedUntil,
+                    SnoozedAt = document.ReminderSnooze.SnoozedAt.Value
+                };
+
+                dbContext.Entry(documentDao.ReminderSnooze).State = EntityState.Added; // Current not sure why this is required, need to investigate a bit more
+            }
+            else
+            {
+                documentDao.ReminderSnooze.SnoozedUntil = document.ReminderSnooze.SnoozedUntil;
+                documentDao.ReminderSnooze.SnoozedAt = document.ReminderSnooze.SnoozedAt.Value;
+
+                dbContext.Entry(documentDao.ReminderSnooze).State = EntityState.Modified; // Current not sure why this is required, need to investigate a bit more
+            }
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<Guid?> GetOwnerByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Documents
+            .AsNoTracking()
+            .Where(d => d.Id == id)
+            .Select(d => d.Property.OwnerId)
+            .Cast<Guid?>()
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<Document?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var documentDao = await dbContext.Documents
+            .AsNoTracking()
+            .Include(d => d.ReminderSnooze)
+            .FirstOrDefaultAsync(d => d.Id == id, cancellationToken);
+
+        return documentDao?.ToDomain();
+    }
 }

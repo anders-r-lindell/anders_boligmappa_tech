@@ -59,4 +59,30 @@ public class GetAllExpiringDocumentsTests : IAsyncLifetime
         var commonIds = response1.Content.Documents.Select(x => x.Id).Intersect(response2.Content.Documents.Select(x => x.Id));
         commonIds.Should().BeEmpty();
     }
+
+    // This test is a bit flaky, not sure why - needs to be investigated
+    [Fact]
+    public async Task GetAllExpiring_WhenDocumentHasExpiryDateButReminderIsSnoozed_ReturnsExpectedDocuments()
+    {
+        var seedData = await _factory.SeedAsync(4);
+
+        var propertyId = seedData.Properties[0].Id;
+        var clientPersonId = seedData.Properties[0].OwnerId;
+
+        var documentsApi = _factory.CreateDocumentsApi(clientPersonId);
+
+        var response = await documentsApi.GetAllExpiringAsync(null);
+
+        response.IsSuccessStatusCode.Should().BeTrue();
+        response.Content!.Documents.Should().NotBeEmpty();
+
+        var documentToSnooze = response.Content!.Documents.First();
+
+        await documentsApi.SnoozeAsync(documentToSnooze.Id);
+
+        response = await documentsApi.GetAllExpiringAsync(null);
+
+        response.IsSuccessStatusCode.Should().BeTrue();
+        response.Content!.Documents.Should().NotContain(x => x.Id == documentToSnooze.Id);
+    }
 }
