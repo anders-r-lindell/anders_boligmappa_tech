@@ -1,4 +1,6 @@
 using Domain.Abstractions;
+using Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,6 +12,10 @@ public static class InfrastructureServiceRegistration
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        services.AddDbContext<BoligmappaDbContext>(options =>
+            options.UseSqlite(
+                configuration.GetConnectionString("DefaultConnection")));
+
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
 
         return services;
